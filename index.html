@@ -12,11 +12,11 @@
     <title>Pokedex</title>
   </head>
   <body id="root">
-    <div class="flex flex-col items-center">
-      <h1 class="text-xl">Pokemon List</h1>
-      <ul data-bind="foreach: pokemonList">
-        <li class="capitalize" data-bind="text: $data.name"></li>
-      </ul>
+    <div data-bind="ifnot :showPokemonDetails">
+      <pokemon-list params="showPokemonDetails: showDetails"></pokemon-list>
+    </div>
+    <div data-bind="if: showPokemonDetails">
+      <pokemon-details params="data: showPokemonDetails"></pokemon-details>
     </div>
   </body>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.5.0/knockout-min.js"></script>

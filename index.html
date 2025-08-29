@@ -16,7 +16,9 @@
       <pokemon-list params="showPokemonDetails: showDetails"></pokemon-list>
     </div>
     <div data-bind="if: showPokemonDetails">
-      <pokemon-details params="data: showPokemonDetails"></pokemon-details>
+      <pokemon-details
+        params="data: showPokemonDetails, selectedPokemonData: selectedPokemonData"
+      ></pokemon-details>
     </div>
   </body>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.5.0/knockout-min.js"></script>

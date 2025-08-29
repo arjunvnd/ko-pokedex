@@ -1,5 +1,7 @@
 var BASE_URL = "https://pokeapi.co/api/v2/";
 
+// https://stackoverflow.com/questions/69239521/unable-to-display-pokemon-image-from-pokeapi-co
+
 function RootViewModel() {
   var self = this;
 
@@ -55,10 +57,37 @@ ko.components.register("pokemon-list", {
 
 ko.components.register("pokemon-details", {
   viewModel: function (params) {
-    this.text = ko.observable((params && params.initialText) || "");
+    var self = this;
+    self.text = ko.observable((params && params.initialText) || "");
+    self.pokemonDetail = ko.observable(null);
+    self.selectedPokemonData = params.selectedPokemonData;
+
+    self.types = ko.computed(function () {
+      if (!self.pokemonDetail()) return [];
+      console.log(
+        "self.pokemonDetail.types",
+        self.pokemonDetail().types.map((type) => type.type.name)
+      );
+      return self.pokemonDetail().types.map((type) => type.type.name);
+    });
+
+    self.loadPokemonData = function () {
+      fetch(params.selectedPokemonData().url)
+        .then((resp) => resp.json())
+        .then((data) => {
+          console.log("data", data);
+          self.pokemonDetail(data.results);
+        });
+      console.log("This is it", params.selectedPokemonData());
+    };
+    self.loadPokemonData();
   },
   template: `
-    <div>Details</div>
+    <div>Details <span class="capitalize" data-bind="text: selectedPokemonData() ? selectedPokemonData().name : ''"></span>
+    <div data-bind="foreach=types">
+      <span data-bind="text: $data"></span>
+    </div>
+    </div>
   `,
 });
 

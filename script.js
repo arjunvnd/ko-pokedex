@@ -63,12 +63,8 @@ ko.components.register("pokemon-details", {
     self.selectedPokemonData = params.selectedPokemonData;
 
     self.types = ko.computed(function () {
-      if (!self.pokemonDetail()) return [];
-      console.log(
-        "self.pokemonDetail.types",
-        self.pokemonDetail().types.map((type) => type.type.name)
-      );
-      return self.pokemonDetail().types.map((type) => type.type.name);
+      const detail = self.pokemonDetail();
+      return detail?.types?.map((type) => type.type.name) || [];
     });
 
     self.loadPokemonData = function () {
@@ -76,15 +72,16 @@ ko.components.register("pokemon-details", {
         .then((resp) => resp.json())
         .then((data) => {
           console.log("data", data);
-          self.pokemonDetail(data.results);
+          self.pokemonDetail(data);
+          console.log("Types computed:", self.types());
         });
-      console.log("This is it", params.selectedPokemonData());
+      console.log("This is it", self.pokemonDetail());
     };
     self.loadPokemonData();
   },
   template: `
     <div>Details <span class="capitalize" data-bind="text: selectedPokemonData() ? selectedPokemonData().name : ''"></span>
-    <div data-bind="foreach=types">
+    <div data-bind="foreach:types">
       <span data-bind="text: $data"></span>
     </div>
     </div>

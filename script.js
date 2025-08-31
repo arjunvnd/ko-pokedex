@@ -60,6 +60,7 @@ ko.components.register("pokemon-details", {
     var self = this;
     self.text = ko.observable((params && params.initialText) || "");
     self.pokemonDetail = ko.observable(null);
+    self.pokemonSpecies = ko.observable(null);
     self.selectedPokemonData = params.selectedPokemonData;
 
     self.types = ko.computed(function () {
@@ -67,23 +68,66 @@ ko.components.register("pokemon-details", {
       return detail?.types?.map((type) => type.type.name) || [];
     });
 
+    self.pokemonBasicDetails = ko.computed(function () {
+      const details = self.pokemonDetail();
+      const species = self.pokemonSpecies();
+      if (details && species) {
+        const pokemonName = details.name;
+        const index = details.id;
+        const description = species.flavor_text_entries[0];
+        const pokemonSpeciesObj = species.genera.find(
+          (genusObj) => genusObj.language.name === "en"
+        );
+        const pokemonSpecies = pokemonSpeciesObj && pokemonSpeciesObj.genus;
+        const height = details.height * 10;
+        let heightInInches = (height * 0.393700787).toFixed(0);
+        const heightInFt = Math.floor(heightInInches / 12);
+        heightInInches %= 12;
+        const weight = ((details.weight / 10) * 2.2046).toFixed(1);
+        const types = details?.types?.map((type) => type.type.name) || [];
+
+        return {
+          pokemonName,
+          index,
+          description,
+          pokemonSpecies,
+          weight,
+          heightInFt,
+          heightInInches,
+          types,
+        };
+      }
+      return null;
+    });
+
     self.loadPokemonData = function () {
-      fetch(params.selectedPokemonData().url)
+      const species = fetch(params.selectedPokemonData().url)
         .then((resp) => resp.json())
         .then((data) => {
-          console.log("data", data);
           self.pokemonDetail(data);
-          console.log("Types computed:", self.types());
+          return data.species;
         });
-      console.log("This is it", self.pokemonDetail());
+      species.then((speciesObj) => {
+        fetch(speciesObj.url)
+          .then((resp) => resp.json())
+          .then((data) => {
+            self.pokemonSpecies(data);
+            return data.species;
+          });
+      });
     };
     self.loadPokemonData();
   },
   template: `
-    <div>Details <span class="capitalize" data-bind="text: selectedPokemonData() ? selectedPokemonData().name : ''"></span>
-    <div data-bind="foreach:types">
-      <span data-bind="text: $data"></span>
-    </div>
+    <div>
+      <div data-bind="if: pokemonBasicDetails()">
+        <p class="capitalize" data-bind="text: pokemonBasicDetails().index"></p>
+        <p class="capitalize" data-bind="text: pokemonBasicDetails().pokemonName"></p>
+        <p class="capitalize" data-bind="text: pokemonBasicDetails().pokemonSpecies"></p>
+      </div>
+      <div data-bind="ifnot: pokemonBasicDetails()">
+        <p>Fetching pokemon details</p>
+      </div>
     </div>
   `,
 });
